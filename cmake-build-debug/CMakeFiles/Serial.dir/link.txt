@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -g  -shared -Wl,-soname,libSerial.so -o devel/lib/libSerial.so CMakeFiles/Serial.dir/src/serial.cc.o CMakeFiles/Serial.dir/src/impl/unix.cc.o 

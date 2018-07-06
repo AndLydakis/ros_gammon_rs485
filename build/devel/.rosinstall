@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/lydakis/ros_ws/src/ros_gammon_rs485/build/devel/setup.sh

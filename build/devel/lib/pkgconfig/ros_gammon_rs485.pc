@@ -1,0 +1,8 @@
+prefix=/home/lydakis/ros_ws/src/ros_gammon_rs485/build/devel
+
+Name: ros_gammon_rs485
+Description: Description of ros_gammon_rs485
+Version: 0.0.0
+Cflags: -I/home/lydakis/ros_ws/src/ros_gammon_rs485/include
+Libs: -L/home/lydakis/ros_ws/src/ros_gammon_rs485/build/devel/lib 
+Requires: 
