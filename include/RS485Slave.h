@@ -66,7 +66,7 @@ public:
 
 protected:
 private:
-    std::vector<RS485Slave> slaves;
+    std::vector <RS485Slave> slaves;
     ros::NodeHandle nh;
     ros::ServiceServer service;
     size_t broker_id;
@@ -113,9 +113,9 @@ private:
     size_t max_message_length;
     size_t max_response_length;
 
-    boost::shared_array<uint8_t> serialize();
+    boost::shared_array <uint8_t> serialize();
 
-    bool deSerialize(boost::shared_array<uint8_t> res);
+    bool deSerialize(boost::shared_array <uint8_t> res);
 
     T transmit;
 
@@ -124,37 +124,76 @@ private:
     ros::ServiceServer service;
 };
 
-//class std_msgs_Int8_Slave : public RS485Slave<std_msgs::Int8, std_msgs::Int8> {
-//public:
-//    std_msgs_Int8_Slave(ros::NodeHandle &nh_, uint8_t id_, unsigned long timeOut_, serial::Serial &port_,
-//                        SubscribeOptions &sub_opts, AdvertiseOptions &ad_opts);
-//
-////    ~std_msgs_Int8_Slave() {}
-//
-////    std_msgs_Int8_Slave() {}
-//
-//    bool recvMsg();
-//
-//    bool sendMsg();
-//
-//    void sub_callback(const std_msgs::Int8ConstPtr &msg_);
-//
-//protected:
-//private:
-//
-//    boost::shared_array<byte> serialize(std_msgs::Int8);
-//
-//    std::string sub_topic;
-//
-//    std::string pub_topic;
-//
-//    std_msgs::Int8 in_msg;
-//
-//    std_msgs::Int8 out_msg;
-//
-//    ros::Subscriber sub;
-//
-//    ros::Publisher pub;
-//};
+template<typename T, typename R>
+class GammonTopicSlave : public RS485Slave {
+public:
+    GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsigned long timeout_, serial::Serial &port_,
+                     std::string pub_topic = "", std::string sub_topic = "", size_t max_transmit_len_ = 1,
+                     size_t max_receive_len_ = 1);
+
+    std::string getSubTopic();
+
+    void setSubTopic(std::string topic_);
+
+    std::string getPubTopic();
+
+    void setPubTopic(std::string topic_);
+
+    void subCallback(const typename T::ConstPtr &msg_);
+
+    bool makeExchange();
+
+    const T &getTransmit() const;
+
+    void setTransmit(T &msg);
+
+    const R &getReceive() const;
+
+    void setReceive(R &msg);
+
+    bool sendMsg(byte *data);
+
+    bool recvMsg();
+
+    byte *getTransmitData();
+
+    void setTransmitData(byte *new_data);
+
+    byte *getReceiveData();
+
+    void setReceiveData(byte *new_data);
+
+    size_t getMaxTransmitLen();
+
+    void setMaxTransmitLen(size_t len);
+
+    size_t getMaxReceiveLen();
+
+    void setMaxReceiveLen(size_t len);
+
+protected:
+private:
+    std::string pub_topic;
+    std::string sub_topic;
+    ros::Subscriber sub;
+    ros::Publisher pub;
+
+    T transmit;
+
+    R receive;
+
+    byte *transmitData;
+
+    byte *receiveData;
+
+    size_t max_transmit_len;
+
+    size_t max_receive_len;
+
+    boost::shared_array <byte> serialize();
+
+    bool deSerialize(boost::shared_array <byte> res);
+
+};
 
 #endif //ROS_GAMMON_RS485_RS485SLAVE_H

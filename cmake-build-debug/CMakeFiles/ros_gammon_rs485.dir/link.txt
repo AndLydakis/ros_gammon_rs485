@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/ros_gammon_rs485.dir/src/main.cpp.o  -o devel/lib/ros_gammon_rs485/ros_gammon_rs485 -Wl,-rpath,/home/lydakis/ros_ws/src/ros_gammon_rs485/cmake-build-debug/devel/lib devel/lib/libSerial.so 
