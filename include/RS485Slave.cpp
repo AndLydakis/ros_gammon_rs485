@@ -17,6 +17,20 @@ constexpr char INT_64[] = "std_msgs/Int64";
 constexpr char FLOAT_32[] = "std_msgs/Float32";
 constexpr char FLOAT_64[] = "std_msgs/Float64";
 
+/**
+ * Create a GammonTopicSlave according to the given parameters
+ * @param type1: the type of message the slave subscribes to
+ * @param type2: the type of message the slave publishes
+ * @param nh_: a ros::Node handle for your ROS-related needs
+ * @param id_: the ID of the slave
+ * @param timeout_: the timeout for the send/receive routines in milliseconds
+ * @param port_: a serial::Serial that is connected to the rest of the devices
+ * @param pub_topic: the topic the slave publishes its messages to
+ * @param sub_topic: the topic the slave subscribes to for additional information
+ * @param max_transmit_len_: maximum length of the transmitted message (must be between 1-255)
+ * @param max_receive_len_: maximum length of the received message (must be between 1-255)
+ * @return
+ */
 std::unique_ptr<RS485Slave>
 createGammonTopicSlave(std::string type1, std::string type2, ros::NodeHandle nh_, size_t id_, unsigned long timeout_,
                        serial::Serial &port_,
@@ -106,7 +120,6 @@ createGammonTopicSlave(std::string type1, std::string type2, ros::NodeHandle nh_
                                                                        sub_topic,
                                                                        max_transmit_len_, max_receive_len_)};
     }
-//    return nullptr;
 }
 
 template<typename T, typename R>
@@ -114,18 +127,49 @@ static void testCallback(const typename T::ConstPtr &msg) {
 
 }
 
+/**
+ * virtual function the derived classes should implement
+ * @return
+ */
 bool RS485Slave::recvMsg() {}
 
+/**
+ * virtual function the derived classes should implement
+ * @return
+ */
 bool RS485Slave::sendMsg() {}
 
+/**
+ * Return the ID of the slave
+ * @return int, the ID of the slave
+ */
 uint8_t RS485Slave::getID() { return ID; }
 
+/**
+ * Set the ID of the slave
+ * @param id, the number the ID should be set to
+ */
 void RS485Slave::setID(uint8_t id) { ID = id; }
 
+/**
+ * Return the timeout of the slave
+ * @return the timeout of the slave
+ */
 unsigned long RS485Slave::getTimeOut() { return timeOut; }
 
+/**
+ * Set the timeout of the slave
+ * @param timeout, the value that will be the timeout of the slave
+ */
 void RS485Slave::setTimeout(unsigned long timeout) { timeOut = timeout; }
 
+/**
+ * constructor
+ * @param nh_ : a ros NodeHandle
+ * @param id_ : the positive id of the slave
+ * @param timeOut_: the timeout in milliseconds for the slave
+ * @param port_: the port the devices are connected to
+ */
 RS485Slave::RS485Slave(ros::NodeHandle &nh_, uint8_t id_, unsigned long timeOut_, serial::Serial &port_) : nh(
         nh_), ID(id_), timeOut(timeOut_), port(port_) {}
 
@@ -141,6 +185,8 @@ GammonTopicSlave<T, R>::GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsign
                                                                     pub_topic(pub_topic_),
                                                                     max_transmit_len(max_transmit_len_),
                                                                     max_receive_len(max_receive_len_) {
+    if (id <= 0)raise(std::invalid_argument("Non-positive id, exiting"));
+    if (timeout <= 0)raise(std::invalid_argument("Non-positive timeout, exiting"));
     if (!sub_topic.empty()) {
 //        sub = nh.subscribe(sub_topic, 10, boost::bind(&GammonTopicSlave<T, R>::subCallback, _1, this));
 //        sub = nh.subscribe(sub_topic, 10, &testCallback, this);
@@ -158,17 +204,32 @@ void GammonTopicSlave<T, R>::subCallback(typename T::ConstPtr &msg_) {
 //    transmit = msg_;
 }
 
+/**
+ * Return the topic the slave publishes to
+ * @return the name of the topic
+ */
 template<typename T, typename R>
 std::string GammonTopicSlave<T, R>::getPubTopic() { return pub_topic; }
 
+/**
+ * set the topic the slave publishes to
+ * @param topic_, the new topic
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setPubTopic(std::string topic_) {
     pub_topic = topic_;
     pub = nh.advertise<R>(pub_topic, 10, false);
 }
 
+/**
+ * Return the topic the topic the slaves subscribes to
+ * @return the name of the topic
+ */
 template<typename T, typename R>
 std::string GammonTopicSlave<T, R>::getSubTopic() { return sub_topic; }
+
+
+
 
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setSubTopic(std::string topic_) {
@@ -177,42 +238,95 @@ void GammonTopicSlave<T, R>::setSubTopic(std::string topic_) {
     sub = nh.subscribe(sub_topic, 10, &GammonTopicSlave<T, R>::subCallback);
 }
 
+/**
+ * Get the ROS message the slave is about to transmit
+ * @return a ROS message of type T
+ */
 template<typename T, typename R>
 const T &GammonTopicSlave<T, R>::getTransmit() const { return transmit; }
 
+/**
+ * Set the ROS message to be serialized and transmitted
+ * @param msg, a ROS message of type T
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setTransmit(T &msg) { transmit = msg; }
 
+/**
+ * Get the ROS message that the slave received
+ * @return a ROS message of type R
+ */
 template<typename T, typename R>
 const R &GammonTopicSlave<T, R>::getReceive() const { return receive; }
 
+/**
+ * Set the ROS message that was received and deserialized
+ * @param msg, a ROS message of type R
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setReceive(R &msg) { receive = msg; }
 
+/**
+ * Get the data that is about to be transmitted as a byte array
+ * @return a byte array containing the serialized data to be transmitted
+ */
 template<typename T, typename R>
 byte *GammonTopicSlave<T, R>::getTransmitData() { return transmitData; }
 
+/**
+ * Set the serialized message to be transmitted directly
+ * @param new_data a new byte array that will replace the message of the slave
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setTransmitData(uint8_t *new_data) { transmitData = new_data; }
 
+/**
+ * Get the data that was received before it was deserialized
+ * @return, a byte array containing the last message that was received
+ */
 template<typename T, typename R>
 byte *GammonTopicSlave<T, R>::getReceiveData() { return receiveData; }
 
+/**
+ * Set the received data
+ * @param new_data a new byte array that will replace the message of the slave
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setReceiveData(uint8_t *new_data) { receiveData = new_data; }
 
+/**
+ * Return the maximum length of received data in bytes
+ * @return the maximum length of received data
+ */
 template<typename T, typename R>
 size_t GammonTopicSlave<T, R>::getMaxReceiveLen() { return max_receive_len; }
 
+/**
+ * Set the maximum length of received data in bytes
+ * @param len, the new maximum length
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setMaxReceiveLen(size_t len) { max_receive_len = len; }
 
+/**
+ * Return the maximum length of transmitted data in bytes
+ * @return the maximum length of transmitted data
+ */
 template<typename T, typename R>
 size_t GammonTopicSlave<T, R>::getMaxTransmitLen() { return max_transmit_len; }
 
+/**
+ * Set the maximum length of transmitted data in bytes
+ * @param len, the new maximum length
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::setMaxTransmitLen(size_t len) { max_transmit_len = len; }
 
+/**
+ * Method that performs the exchange between the slave instance and the
+ * corresponding device
+ * @return true if the exchange was successful, false othewrise
+ */
 template<typename T, typename R>
 bool GammonTopicSlave<T, R>::makeExchange() {
     try {
@@ -233,6 +347,10 @@ bool GammonTopicSlave<T, R>::makeExchange() {
     return true;
 }
 
+/**
+ * Serializes the ROS message to be transmitted to a byte array
+ * @return the buffer containing the serialized message
+ */
 template<typename T, typename R>
 boost::shared_array<byte> GammonTopicSlave<T, R>::serialize() {
     try {
@@ -258,6 +376,10 @@ boost::shared_array<byte> GammonTopicSlave<T, R>::serialize() {
 
 }
 
+/**
+ * Send the message to the slave
+ * @return true if the send was successful, false otherwise
+ */
 template<typename T, typename R>
 bool GammonTopicSlave<T, R>::sendMsg() {
     try {
@@ -275,6 +397,10 @@ bool GammonTopicSlave<T, R>::sendMsg() {
     return true;
 }
 
+/**
+ * Receive a response from the slave
+ * @return true if the receive was successful, false otherwise
+ */
 template<typename T, typename R>
 bool GammonTopicSlave<T, R>::recvMsg() {
     try {
@@ -297,6 +423,10 @@ bool GammonTopicSlave<T, R>::recvMsg() {
 
 }
 
+/**
+ * Deserialize the received message to a ROS msg and publish it if possible
+ * @return true if the deserialization was successful, false otherwise
+ */
 template<typename T, typename R>
 bool GammonTopicSlave<T, R>::deSerialize() {
 //    ROS_ERROR("Slave %d Deserializing response", ID);
