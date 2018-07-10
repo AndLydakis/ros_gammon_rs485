@@ -1,0 +1,4 @@
+<launch>
+    <node name="gammon_node" type="ros_gammon_node" pkg="ros_gammon_rs485" output="screen" required="true"/>
+    <rosparam file="$(find ros_gammon_rs485)/config/sample.yaml" command="load"/>
+</launch>

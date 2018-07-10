@@ -26,13 +26,15 @@ class RS485Slave {
 public:
 //    RS485Slave() {};
 
-//    virtual ~RS485Slave() {};
+    virtual ~RS485Slave() {};
 
     RS485Slave(ros::NodeHandle &nh_, uint8_t id_, unsigned long timeOut_, serial::Serial &port_);
 
     virtual bool recvMsg();
 
     virtual bool sendMsg();
+
+    virtual bool makeExchange();
 
     uint8_t getID();
 
@@ -54,75 +56,9 @@ private:
 
 };
 
-class GammonBroker {
-public:
-    GammonBroker(ros::NodeHandle &nh, size_t id_ = 0);
-
-    static bool exchangeService(std::function<bool()> clientExchangeFunction);
-
-    void addClient(RS485Slave slave);
-
-    void removeClient(RS485Slave slave);
-
-protected:
-private:
-    std::vector <RS485Slave> slaves;
-    ros::NodeHandle nh;
-    ros::ServiceServer service;
-    size_t broker_id;
-};
 
 template<typename T, typename R>
-class GammonSlave : public RS485Slave {
-
-public:
-    GammonSlave(ros::NodeHandle &nh, size_t id, unsigned long timeout, serial::Serial &port, size_t mx_msg_ln = 1,
-                size_t mx_res_len = 1);
-
-    void setMaxMsgLength(size_t len);
-
-    void setMaxResLength(size_t len);
-
-    bool exchange();
-
-    bool exchangeService(ros_gammon_rs485::GammonExchange::Request &req,
-                         ros_gammon_rs485::GammonExchange::Response &res);
-
-    T &getTransmit();
-
-    T const &getTransmit() const;
-
-    void setTransmit(T &new_req);
-
-    R &getReceive();
-
-    R const &getReceive() const;
-
-    void setReceive(T &new_rec);
-
-    size_t getMaxMsgLength();
-
-    size_t getMaxResLength();
-
-    bool sendMsg() {};
-
-    bool recvMsg() {};
-
-protected:
-private:
-    size_t max_message_length;
-    size_t max_response_length;
-
-    boost::shared_array <uint8_t> serialize();
-
-    bool deSerialize(boost::shared_array <uint8_t> res);
-
-    T transmit;
-
-    R receive;
-
-    ros::ServiceServer service;
-};
+static void testCallback(const typename T::ConstPtr &msg);
 
 template<typename T, typename R>
 class GammonTopicSlave : public RS485Slave {
@@ -139,7 +75,7 @@ public:
 
     void setPubTopic(std::string topic_);
 
-    void subCallback(const typename T::ConstPtr &msg_);
+    void subCallback(typename T::ConstPtr &msg_);
 
     bool makeExchange();
 
@@ -151,7 +87,7 @@ public:
 
     void setReceive(R &msg);
 
-    bool sendMsg(byte *data);
+    bool sendMsg();
 
     bool recvMsg();
 
@@ -190,9 +126,9 @@ private:
 
     size_t max_receive_len;
 
-    boost::shared_array <byte> serialize();
+    boost::shared_array<byte> serialize();
 
-    bool deSerialize(boost::shared_array <byte> res);
+    bool deSerialize();
 
 };
 
