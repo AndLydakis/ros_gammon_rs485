@@ -70,6 +70,8 @@ void sendComplemented(serial::Serial &port,
 void sendMsg(serial::Serial &port,
              const byte *data,
              byte length) {
+//    std::cout << "Sending Msg: " << std::endl;
+//    for (size_t i = 0; i < length; ++i)std::cout << data[i] << std::endl;
     port.write(&STX, sizeof(STX));  // STX
 
     for (byte i = 0; i < length; ++i)
@@ -102,7 +104,7 @@ byte recvMsg(serial::Serial &port,             // read one byte
     byte current_byte;
 
 
-    //std::cout << "Starting to receive message at " << start_time << std::endl;
+//    std::cout << "Starting to receive message at " << start_time << std::endl;
     //While not timed out
     while (millis() - start_time < timeout) {
         //poll the port
@@ -133,7 +135,7 @@ byte recvMsg(serial::Serial &port,             // read one byte
 
                     // check byte is in valid form (4 bits followed by 4 bits complemented)
                     if ((inbyte >> 4) != ((inbyte & 0x0F) ^ 0x0F)) {
-                        std::cout << "Invalid Character, Returning\n";
+//                        std::cout << "Invalid Character, Returning\n";
                         return 0;  // bad character
                     }
 

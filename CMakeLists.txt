@@ -33,9 +33,6 @@ set(serial_SRCS src/serial.cc include/serial/serial.h include/serial/v8stdint.h)
 list(APPEND serial_SRCS src/impl/unix.cc)
 add_library(Serial ${serial_SRCS})
 
-
-add_executable(ros_gammon_rs485 src/main.cpp)
 add_executable(ros_gammon_node src/ros_gammon_node.cpp)
 target_link_libraries(ros_gammon_node ${catkin_LIBRARIES} Serial)
-target_link_libraries(ros_gammon_rs485 Serial)
 
