@@ -44,6 +44,7 @@ public:
 
     void setTimeout(unsigned long timeout);
 
+    virtual void init_sub();
 protected:
     ros::NodeHandle nh;
 
@@ -75,7 +76,7 @@ public:
 
     void setPubTopic(std::string topic_);
 
-    void subCallback(typename T::ConstPtr &msg_);
+    void subCallback(const typename T::ConstPtr &msg_);
 
     bool makeExchange();
 
@@ -107,6 +108,8 @@ public:
 
     void setMaxReceiveLen(size_t len);
 
+    void init_sub();
+//    void operator()(const typename T::ConstPtr &msg_);
 protected:
 private:
     std::string pub_topic;
@@ -126,7 +129,7 @@ private:
 
     size_t max_receive_len;
 
-    boost::shared_array<byte> serialize();
+    boost::shared_array <byte> serialize();
 
     bool deSerialize();
 

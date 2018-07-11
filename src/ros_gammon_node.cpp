@@ -55,7 +55,7 @@ std::vector<unique_ptr<RS485Slave>> createSlaves(const ros::NodeHandle &nh, seri
         slaves.emplace_back(
                 createGammonTopicSlave(sub_type, pub_type, nh, id, timeout, *arduino_port, pub_topic, sub_topic, mtl,
                                        mrl));
-
+        slaves[slaves.size() - 1]->init_sub();
         cnt++;
         query = slave_ + std::to_string(cnt + 1) + "/sub_type";
     }

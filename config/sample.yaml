@@ -1,29 +1,29 @@
 slave1:
   id: 1
   sub_type: "std_msgs/Int8"
-  sub_topic: ""
+  sub_topic: "slave1_sub"
   pub_type: "std_msgs/Int8"
   pub_topic: "slave1"
-  timeout: 500
+  timeout: 100
   mtl: 100
   mrl: 100
 
 slave2:
   id: 2
   sub_type: "std_msgs/Int8"
-  sub_topic: ""
+  sub_topic: "slave2_sub"
   pub_type: "std_msgs/Int8"
   pub_topic: "slave2"
-  timeout: 500
+  timeout: 100
   mtl: 100
   mrl: 100
 
 slave3:
   id: 3
   sub_type: "std_msgs/Int8"
-  sub_topic: ""
+  sub_topic: "slave3_sub"
   pub_type: "std_msgs/Int8"
   pub_topic: "slave3"
-  timeout: 500
+  timeout: 100
   mtl: 100
   mrl: 100

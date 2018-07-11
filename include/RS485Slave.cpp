@@ -1,6 +1,7 @@
 //
 // Created by lydakis on 04/07/18.
 //
+#include <csignal>
 #include "RS485Slave.h"
 #include "std_msgs/Int64.h"
 #include "std_msgs/Int32.h"
@@ -122,10 +123,7 @@ createGammonTopicSlave(std::string type1, std::string type2, ros::NodeHandle nh_
     }
 }
 
-template<typename T, typename R>
-static void testCallback(const typename T::ConstPtr &msg) {
-
-}
+void RS485Slave::init_sub() {}
 
 /**
  * virtual function the derived classes should implement
@@ -171,7 +169,11 @@ void RS485Slave::setTimeout(unsigned long timeout) { timeOut = timeout; }
  * @param port_: the port the devices are connected to
  */
 RS485Slave::RS485Slave(ros::NodeHandle &nh_, uint8_t id_, unsigned long timeOut_, serial::Serial &port_) : nh(
-        nh_), ID(id_), timeOut(timeOut_), port(port_) {}
+        nh_), ID(id_), timeOut(timeOut_), port(port_) {
+
+    if (ID <= 0)throw std::invalid_argument("Non-positive id, exiting");
+    if (timeOut <= 0)throw std::invalid_argument("Non-positive timeout, exiting");
+}
 
 bool RS485Slave::makeExchange() {}
 
@@ -185,11 +187,9 @@ GammonTopicSlave<T, R>::GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsign
                                                                     pub_topic(pub_topic_),
                                                                     max_transmit_len(max_transmit_len_),
                                                                     max_receive_len(max_receive_len_) {
-    if (id <= 0)raise(std::invalid_argument("Non-positive id, exiting"));
-    if (timeout <= 0)raise(std::invalid_argument("Non-positive timeout, exiting"));
     if (!sub_topic.empty()) {
 //        sub = nh.subscribe(sub_topic, 10, boost::bind(&GammonTopicSlave<T, R>::subCallback, _1, this));
-//        sub = nh.subscribe(sub_topic, 10, &testCallback, this);
+
     }
     if (!pub_topic.empty()) {
         pub = nh.advertise<R>(pub_topic, 10, false);
@@ -200,9 +200,14 @@ GammonTopicSlave<T, R>::GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsign
 }
 
 template<typename T, typename R>
-void GammonTopicSlave<T, R>::subCallback(typename T::ConstPtr &msg_) {
-//    transmit = msg_;
+void GammonTopicSlave<T, R>::subCallback(const typename T::ConstPtr &msg_) {
+   ROS_INFO("%d", msg_->data);
 }
+
+template<typename T, typename R>
+void GammonTopicSlave<T, R>::init_sub() {
+    sub = nh.subscribe<T>(sub_topic, 10, boost::bind(&GammonTopicSlave<T, R>::subCallback, this, _1), false);
+};
 
 /**
  * Return the topic the slave publishes to
@@ -227,8 +232,6 @@ void GammonTopicSlave<T, R>::setPubTopic(std::string topic_) {
  */
 template<typename T, typename R>
 std::string GammonTopicSlave<T, R>::getSubTopic() { return sub_topic; }
-
-
 
 
 template<typename T, typename R>
