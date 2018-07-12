@@ -44,8 +44,8 @@ slave1:
   mrl: 100  #maximum_receive_length, must be positive
 ``` 
 ### TODO
-- Fix subscribers.
-- Add serialization methods for the slaves for different data types.
+- ~~Fix subscribers.~~
+- ~~Add serialization methods for the slaves for different data types.~~
 
 ### Maintainers
 [Andreas Lydakis](andlydakis@gmail.com)
