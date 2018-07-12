@@ -1,5 +1,5 @@
 //
-// Created by lydakis on 04/07/18.
+// Created by Andreas Lydakis on 04/07/18.
 //
 
 #ifndef ROS_GAMMON_RS485_RS485SLAVE_H
@@ -24,8 +24,6 @@ struct SubscribeOptions {
 
 class RS485Slave {
 public:
-//    RS485Slave() {};
-
     virtual ~RS485Slave() {};
 
     RS485Slave(ros::NodeHandle &nh_, uint8_t id_, unsigned long timeOut_, serial::Serial &port_);
@@ -45,6 +43,7 @@ public:
     void setTimeout(unsigned long timeout);
 
     virtual void init_sub();
+
 protected:
     ros::NodeHandle nh;
 
@@ -57,16 +56,14 @@ private:
 
 };
 
-
-template<typename T, typename R>
-static void testCallback(const typename T::ConstPtr &msg);
-
 template<typename T, typename R>
 class GammonTopicSlave : public RS485Slave {
 public:
     GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsigned long timeout_, serial::Serial &port_,
                      std::string pub_topic = "", std::string sub_topic = "", size_t max_transmit_len_ = 1,
                      size_t max_receive_len_ = 1);
+
+    ~GammonTopicSlave();
 
     std::string getSubTopic();
 
@@ -129,7 +126,7 @@ private:
 
     size_t max_receive_len;
 
-    boost::shared_array <byte> serialize();
+    boost::shared_array<byte> serialize();
 
     bool deSerialize();
 

@@ -1,5 +1,5 @@
 //
-// Created by lydakis on 04/07/18.
+// Created by Andreas Lydakis on 04/07/18.
 //
 #include <csignal>
 #include "RS485Slave.h"
@@ -123,16 +123,19 @@ createGammonTopicSlave(std::string type1, std::string type2, ros::NodeHandle nh_
     }
 }
 
+/**
+ * Virtual function the derived classes should implement
+ */
 void RS485Slave::init_sub() {}
 
 /**
- * virtual function the derived classes should implement
+ * Virtual function the derived classes should implement
  * @return
  */
 bool RS485Slave::recvMsg() {}
 
 /**
- * virtual function the derived classes should implement
+ * Virtual function the derived classes should implement
  * @return
  */
 bool RS485Slave::sendMsg() {}
@@ -178,6 +181,22 @@ RS485Slave::RS485Slave(ros::NodeHandle &nh_, uint8_t id_, unsigned long timeOut_
 bool RS485Slave::makeExchange() {}
 
 template<typename T, typename R>
+GammonTopicSlave::~GammonTopicSlave() {}
+
+/**
+ * Constructor
+ * @tparam T , type of ROS message transmitted by the slave
+ * @tparam R , type of ROS message received and republished by the slave
+ * @param nh_ , ros::NodeHandle that handles ROS related affairs
+ * @param id_ , the positive id of the slave
+ * @param timeout_ , the positive timeout (in milliseconds) for send and receive functions
+ * @param port_ , a serial::Serial port that performs the exchanges
+ * @param pub_topic_ , a std::string representing the topic the slave republishes incoming data to
+ * @param sub_topic_ , a std::string representing the topic the slaves listens to for changes to its data
+ * @param max_transmit_len_ , maximum length in bytes of the message to be sent
+ * @param max_receive_len_ , maximum length in bytes of the message to be received
+ */
+template<typename T, typename R>
 GammonTopicSlave<T, R>::GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsigned long timeout_, serial::Serial &port_,
                                          std::string pub_topic_, std::string sub_topic_, size_t max_transmit_len_,
                                          size_t max_receive_len_) : RS485Slave(nh_, id_,
@@ -187,10 +206,6 @@ GammonTopicSlave<T, R>::GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsign
                                                                     pub_topic(pub_topic_),
                                                                     max_transmit_len(max_transmit_len_),
                                                                     max_receive_len(max_receive_len_) {
-    if (!sub_topic.empty()) {
-//        sub = nh.subscribe(sub_topic, 10, boost::bind(&GammonTopicSlave<T, R>::subCallback, _1, this));
-
-    }
     if (!pub_topic.empty()) {
         pub = nh.advertise<R>(pub_topic, 10, false);
     }
@@ -199,11 +214,19 @@ GammonTopicSlave<T, R>::GammonTopicSlave(ros::NodeHandle nh_, size_t id_, unsign
     receiveData = new byte[max_receive_len]{0};
 }
 
+/**
+ * Callback to listen to a specific topic and change the message sent down the line
+ * (or do some other function you can specify)
+ * @param msg_ a ros message of type T, the same as the one being transmitted down the line by the slave
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::subCallback(const typename T::ConstPtr &msg_) {
-   ROS_INFO("%d", msg_->data);
+    transmit = *msg_;
 }
 
+/**
+ * Initialize the slave's subscriber to the subCallback function
+ */
 template<typename T, typename R>
 void GammonTopicSlave<T, R>::init_sub() {
     sub = nh.subscribe<T>(sub_topic, 10, boost::bind(&GammonTopicSlave<T, R>::subCallback, this, _1), false);
