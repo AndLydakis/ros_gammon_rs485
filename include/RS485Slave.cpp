@@ -181,7 +181,7 @@ RS485Slave::RS485Slave(ros::NodeHandle &nh_, uint8_t id_, unsigned long timeOut_
 bool RS485Slave::makeExchange() {}
 
 template<typename T, typename R>
-GammonTopicSlave::~GammonTopicSlave() {}
+GammonTopicSlave<T,R>::~GammonTopicSlave() {}
 
 /**
  * Constructor
